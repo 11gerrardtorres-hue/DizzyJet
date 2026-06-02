@@ -127,7 +127,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f411b99475a7e45a0bfd8d2ba4d7616d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Missile
-  speed: 18
-  turnSpeed: 130
-  lifetime: 5
+  speed: 22
+  turnSpeed: 95
+  lifetime: 6
   hitRadius: 1
+  lockBreakAngle: 50
