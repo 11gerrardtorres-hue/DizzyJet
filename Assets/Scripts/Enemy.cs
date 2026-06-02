@@ -14,6 +14,12 @@ public class Enemy : MonoBehaviour
     public GameObject missilePrefab;
     public float fireInterval = 3f;   // 발사 간격 (초)
 
+    [Header("난이도 램프")]
+    public float rampInterval = 25f;     // 이 시간(초)마다 난이도 1단계 상승
+    public float fireIntervalMult = 0.9f;// 단계마다 발사 간격 ×0.9 (더 자주)
+    public float missileSpeedMult = 1.04f;// 단계마다 미사일 속도 ×1.04 (더 빠름)
+    public float minFireInterval = 0.6f; // 발사 간격 하한
+
     private Transform player;
     private float fireTimer;
     private GameObject currentMissile;  // 공중에 떠 있는 미사일 (한 번에 하나)
@@ -74,8 +80,18 @@ public class Enemy : MonoBehaviour
         fireTimer -= Time.deltaTime;
         if (fireTimer <= 0f)
         {
+            // 경과 시간으로 난이도 단계 계산
+            int step = Mathf.FloorToInt(Time.timeSinceLevelLoad / rampInterval);
+
             currentMissile = Instantiate(missilePrefab, transform.position, Quaternion.identity);
-            fireTimer = fireInterval;
+
+            // 난이도: 미사일 속도 상승
+            Missile mis = currentMissile.GetComponent<Missile>();
+            if (mis != null) mis.speed *= Mathf.Pow(missileSpeedMult, step);
+
+            // 난이도: 발사 간격 단축 (하한 적용)
+            float interval = fireInterval * Mathf.Pow(fireIntervalMult, step);
+            fireTimer = Mathf.Max(minFireInterval, interval);
         }
     }
 }

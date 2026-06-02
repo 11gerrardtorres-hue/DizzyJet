@@ -20,6 +20,9 @@ public class PlayerController : MonoBehaviour
     public float minChargeTime = 0.45f; // 이 시간 이상 '드리프트+선회'해야 부스터 발동 (연타 방지)
     public float boostCooldown = 1.0f;  // 부스터 후 재충전 대기
 
+    [Header("이펙트")]
+    public TrailRenderer[] driftTrails;  // 드리프트 중 양 날개 바람 가르기 선
+
     private float heading;
     private float bank;
     private float turnInput;
@@ -46,6 +49,15 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         HandleInput();
+
+        // 드리프트 중에만 양 날개 트레일(선) 그리기
+        if (driftTrails != null)
+        {
+            foreach (var t in driftTrails)
+            {
+                if (t != null) t.emitting = isDrifting;
+            }
+        }
 
         // --- 선회/뱅킹: 드리프트면 넓은 U턴 값으로 부드럽게 전환 ---
         float targetTurn    = isDrifting ? driftTurnSpeed : turnSpeed;
