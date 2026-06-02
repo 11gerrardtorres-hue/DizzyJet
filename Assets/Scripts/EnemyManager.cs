@@ -8,6 +8,7 @@ public class EnemyManager : MonoBehaviour
     public float rampInterval = 25f;  // 이 시간(초)마다 1기 증원
     public float spawnDistance = 20f; // 플레이어로부터 떨어진 거리
     public float sideSpread = 50f;    // 위/아래 기준 좌우로 퍼지는 각도(좁은 옆면 회피)
+    public float formationSpacing = 4f; // 적기 간 좌우 간격
 
     private int spawned = 1;           // 씬에 이미 1기 있으므로 1부터 시작
     private Transform player;
@@ -43,6 +44,17 @@ public class EnemyManager : MonoBehaviour
         Vector3 offset = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * spawnDistance;
         Vector3 pos = player.position + offset;
         pos.y = 0f;
-        Instantiate(enemyPrefab, pos, Quaternion.identity);
+
+        GameObject e = Instantiate(enemyPrefab, pos, Quaternion.identity);
+
+        // 좌우 대형 오프셋 부여: +s, -s, +2s, -2s ... (씬 적기는 0)
+        Enemy en = e.GetComponent<Enemy>();
+        if (en != null)
+        {
+            float off = (spawned % 2 == 1)
+                ? formationSpacing * ((spawned + 1) / 2)
+                : -formationSpacing * (spawned / 2);
+            en.formationOffset = off;
+        }
     }
 }

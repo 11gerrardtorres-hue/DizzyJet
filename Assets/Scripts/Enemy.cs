@@ -9,6 +9,7 @@ public class Enemy : MonoBehaviour
     public float minSpeed = 8f;           // 최저 속도 (이보다 느린 플레이어는 따라잡음)
     public float maxSpeed = 21f;          // 최고 속도 (멀어지면 잠깐 빨라져 따라붙음)
     public float hitDistance = 2.5f;      // 이 거리 안이면 충돌=격추
+    public float formationOffset = 0f;    // 좌우 대형 오프셋 (적기들이 겹치지 않게 나란히)
 
     [Header("미사일 발사")]
     public GameObject missilePrefab;
@@ -42,8 +43,13 @@ public class Enemy : MonoBehaviour
 
     void ChasePlayer()
     {
-        // 플레이어 방향으로 회전 + 전진
-        Vector3 dir = player.position - transform.position;
+        // 추격 방향 기준 좌우로 오프셋을 준 '대형 위치'를 목표로 → 적기들이 나란히
+        Vector3 toPlayer = player.position - transform.position;
+        toPlayer.y = 0f;
+        Vector3 perp = Vector3.Cross(Vector3.up, toPlayer.sqrMagnitude > 0.001f ? toPlayer.normalized : Vector3.forward);
+        Vector3 targetPos = player.position + perp * formationOffset;
+
+        Vector3 dir = targetPos - transform.position;
         dir.y = 0f;
 
         if (dir.magnitude > 0.1f)
