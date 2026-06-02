@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [Header("이동 설정")]
     public float moveSpeed = 15f;
-    public float rotateSpeed = 10f;  // 기수가 방향으로 돌아가는 속도
+    public float rotateSpeed = 10f;
 
     private Vector2 moveInput;
 
@@ -20,7 +20,6 @@ public class PlayerController : MonoBehaviour
     {
         moveInput = Vector2.zero;
 
-        // 키보드 입력
         var keyboard = Keyboard.current;
         if (keyboard != null)
         {
@@ -30,7 +29,6 @@ public class PlayerController : MonoBehaviour
             if (keyboard.downArrowKey.isPressed)  moveInput.y = -1f;
         }
 
-        // 터치 입력 (화면 터치 위치 방향으로 이동)
         var touchscreen = Touchscreen.current;
         if (touchscreen != null && touchscreen.primaryTouch.press.isPressed)
         {
@@ -49,7 +47,6 @@ public class PlayerController : MonoBehaviour
     void RotateToDirection()
     {
         if (moveInput.magnitude < 0.1f) return;
-
         Vector3 direction = new Vector3(moveInput.x, 0f, moveInput.y);
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotateSpeed * Time.deltaTime);
