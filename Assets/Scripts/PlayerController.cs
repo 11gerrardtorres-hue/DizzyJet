@@ -23,6 +23,10 @@ public class PlayerController : MonoBehaviour
     [Header("이펙트")]
     public TrailRenderer[] driftTrails;  // 드리프트 중 양 날개 바람 가르기 선
 
+    [Header("모바일 조작 (화면 좌/우 절반)")]
+    public HoldButton btnLeft;   // 왼쪽 절반
+    public HoldButton btnRight;  // 오른쪽 절반
+
     private float heading;
     private float bank;
     private float turnInput;
@@ -30,6 +34,10 @@ public class PlayerController : MonoBehaviour
     private bool wasDrifting;   // 직전 프레임 드리프트 상태 (종료 감지용)
     private float driftCharge;  // 드리프트+선회 유지 시간 (부스터 충전량)
     private float cooldownTimer;// 부스터 쿨다운 남은 시간
+
+    // 좌/우 버튼 누른 순서 추적 (둘 다 누르면 먼저 누른 쪽으로 드리프트)
+    private bool prevLeft, prevRight;
+    private float leftDownTime, rightDownTime;
 
     private float curSpeed;
     private float curTurn;
@@ -111,23 +119,32 @@ public class PlayerController : MonoBehaviour
         turnInput = 0f;
         isDrifting = false;
 
-        var keyboard = Keyboard.current;
-        if (keyboard != null)
-        {
-            if (keyboard.leftArrowKey.isPressed)  turnInput = -1f;
-            if (keyboard.rightArrowKey.isPressed) turnInput = 1f;
+        // 키보드(에디터) + 모바일 좌/우 절반 버튼을 하나로 통합
+        var kb = Keyboard.current;
+        bool kl = kb != null && kb.leftArrowKey.isPressed;
+        bool kr = kb != null && kb.rightArrowKey.isPressed;
+        bool l = kl || (btnLeft != null && btnLeft.IsHeld);
+        bool r = kr || (btnRight != null && btnRight.IsHeld);
 
-            if (keyboard.spaceKey.isPressed) isDrifting = true;
+        // 각 버튼을 '새로 누른' 시각 기록 (순서 판별용)
+        if (l && !prevLeft)  leftDownTime  = Time.time;
+        if (r && !prevRight) rightDownTime = Time.time;
+        prevLeft = l;
+        prevRight = r;
+
+        if (l && r)
+        {
+            // 둘 다 누름 → 먼저 누른 방향으로 드리프트
+            isDrifting = true;
+            turnInput = (leftDownTime <= rightDownTime) ? -1f : 1f;
         }
-
-        var touchscreen = Touchscreen.current;
-        if (touchscreen != null && touchscreen.primaryTouch.press.isPressed)
+        else if (l)
         {
-            float touchX = touchscreen.primaryTouch.position.ReadValue().x;
-            turnInput = touchX < Screen.width / 2f ? -1f : 1f;
-
-            if (touchscreen.touches.Count > 1 && touchscreen.touches[1].press.isPressed)
-                isDrifting = true;
+            turnInput = -1f;
+        }
+        else if (r)
+        {
+            turnInput = 1f;
         }
     }
 }
