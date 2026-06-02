@@ -14,19 +14,26 @@ public class PlayerController : MonoBehaviour
     public float driftBankAngle = 60f;  // 드리프트 중 깊은 기울기
     public float driftSmooth = 14f;     // 드리프트 진입 반응성
 
-    [Header("드리프트 부스터 (빵 치고나가기)")]
-    public float boostSpeed = 26f;    // 드리프트 직후 폭발 속도
-    public float boostDecel = 12f;    // 부스터가 순항으로 잦아드는 속도
+    [Header("드리프트 부스터 (충전식)")]
+    public float boostSpeed = 26f;      // 드리프트 직후 폭발 속도
+    public float boostDecel = 12f;      // 부스터가 순항으로 잦아드는 속도
+    public float minChargeTime = 0.45f; // 이 시간 이상 '드리프트+선회'해야 부스터 발동 (연타 방지)
+    public float boostCooldown = 1.0f;  // 부스터 후 재충전 대기
 
     private float heading;
     private float bank;
     private float turnInput;
     private bool isDrifting;
     private bool wasDrifting;   // 직전 프레임 드리프트 상태 (종료 감지용)
+    private float driftCharge;  // 드리프트+선회 유지 시간 (부스터 충전량)
+    private float cooldownTimer;// 부스터 쿨다운 남은 시간
 
     private float curSpeed;
     private float curTurn;
     private float curBankMax;
+
+    // 카메라 등 외부에서 현재 속도를 읽을 수 있게
+    public float CurrentSpeed => curSpeed;
 
     void Start()
     {
@@ -46,16 +53,30 @@ public class PlayerController : MonoBehaviour
         curTurn    = Mathf.Lerp(curTurn, targetTurn, driftSmooth * Time.deltaTime);
         curBankMax = Mathf.Lerp(curBankMax, targetBankMax, driftSmooth * Time.deltaTime);
 
+        // 쿨다운 진행
+        if (cooldownTimer > 0f) cooldownTimer -= Time.deltaTime;
+
         // --- 속도: 드리프트 중 / 부스터 / 순항 ---
         if (isDrifting)
         {
-            // 드리프트 중엔 카빙 속도로 (살짝 빠르게)
+            // 실제로 '선회하면서' 드리프트할 때만 부스터 충전 (직진 드리프트는 충전 X)
+            if (Mathf.Abs(turnInput) > 0.1f) driftCharge += Time.deltaTime;
+
+            // 드리프트 중엔 카빙 속도로
             curSpeed = Mathf.Lerp(curSpeed, driftSpeed, driftSmooth * Time.deltaTime);
         }
         else
         {
-            // 드리프트가 막 끝난 순간 → 부스터 폭발
-            if (wasDrifting) curSpeed = boostSpeed;
+            // 드리프트가 막 끝난 순간 → 충분히 충전됐고 쿨다운이 아니면 부스터 발동
+            if (wasDrifting)
+            {
+                if (driftCharge >= minChargeTime && cooldownTimer <= 0f)
+                {
+                    curSpeed = boostSpeed;
+                    cooldownTimer = boostCooldown;
+                }
+                driftCharge = 0f; // 충전량 리셋
+            }
             // 부스터에서 순항으로 서서히 잦아듦
             curSpeed = Mathf.MoveTowards(curSpeed, cruiseSpeed, boostDecel * Time.deltaTime);
         }
