@@ -8,6 +8,7 @@ public class Missile : MonoBehaviour
     public float lifetime = 6f;      // 수명 (초)
     public float hitRadius = 1f;     // 플레이어와 이 거리 안이면 명중
     public float lockBreakAngle = 60f; // 이 각도 이상 벌어지면 락 해제(직진으로 빠짐)
+    public float obstacleHitRadius = 0.6f; // 장애물과 이 거리 안이면 터짐
 
     private Transform target;
     private bool lockBroken;          // 급선회로 따돌려져 락이 풀렸는지
@@ -33,6 +34,13 @@ public class Missile : MonoBehaviour
 
     void Update()
     {
+        // 장애물에 막히면 터짐 (엄폐 가능)
+        if (HitObstacle())
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         // 락이 살아있을 때만 추적 (락 풀리면 그냥 직진해서 화면 밖으로)
         if (target != null && !lockBroken)
         {
@@ -68,5 +76,16 @@ public class Missile : MonoBehaviour
 
         // 바라보는 방향으로 전진
         transform.position += transform.forward * speed * Time.deltaTime;
+    }
+
+    // 주변에 'Obstacle' 태그 콜라이더가 있으면 true
+    bool HitObstacle()
+    {
+        Collider[] cols = Physics.OverlapSphere(transform.position, obstacleHitRadius);
+        foreach (var c in cols)
+        {
+            if (c.CompareTag("Obstacle")) return true;
+        }
+        return false;
     }
 }
