@@ -13,6 +13,12 @@ public class Missile : MonoBehaviour
     private Transform target;
     private bool lockBroken;          // 급선회로 따돌려져 락이 풀렸는지
 
+    // 아직 나를 추적 중인지 (니어미스 판정용)
+    public bool IsLockedOn => target != null && !lockBroken;
+
+    // 이 미사일로 니어미스를 이미 인정했는지 (중복 방지)
+    [System.NonSerialized] public bool nearMissCounted;
+
     void Start()
     {
         // 씬에서 플레이어를 자동으로 찾음
