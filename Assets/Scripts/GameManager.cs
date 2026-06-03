@@ -8,12 +8,15 @@ public class GameManager : MonoBehaviour
 
     [Header("UI 연결")]
     public TMP_Text scoreText;            // 화면 위 점수
+    public GameObject startPanel;         // 시작 화면
     public GameObject gameOverPanel;      // 게임오버 화면
     public TMP_Text finalScoreText;       // 이번 점수
     public TMP_Text bestScoreText;        // 최고 기록
 
     private float score;
     private bool isGameOver;
+    private bool hasStarted;
+    private static bool skipIntro = false; // 재시작 시 시작화면 건너뛰기
 
     void Awake()
     {
@@ -25,11 +28,38 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         score = 0f;
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
+
+        if (skipIntro)
+        {
+            // 재시작: 시작화면 없이 바로 플레이
+            skipIntro = false;
+            BeginPlay();
+        }
+        else
+        {
+            // 첫 실행: 시작화면 띄우고 멈춤
+            hasStarted = false;
+            if (startPanel != null) startPanel.SetActive(true);
+            Time.timeScale = 0f;
+        }
+    }
+
+    void BeginPlay()
+    {
+        hasStarted = true;
+        if (startPanel != null) startPanel.SetActive(false);
+        Time.timeScale = 1f;
+    }
+
+    // 시작 화면 탭 → 게임 시작
+    public void StartGame()
+    {
+        if (!hasStarted) BeginPlay();
     }
 
     void Update()
     {
-        if (isGameOver) return;
+        if (!hasStarted || isGameOver) return;
 
         // 생존 시간 = 점수
         score += Time.deltaTime;
@@ -64,6 +94,7 @@ public class GameManager : MonoBehaviour
 
     public void Restart()
     {
+        skipIntro = true;      // 재시작은 시작화면 건너뜀
         Time.timeScale = 1f;   // 다시 정상 속도
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
