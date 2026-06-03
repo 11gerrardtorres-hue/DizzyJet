@@ -6,9 +6,9 @@ public class EnemyManager : MonoBehaviour
     public GameObject enemyPrefab;    // 복제할 적기 프리팹
     public int maxEnemies = 3;        // 최대 적기 수
     public float rampInterval = 25f;  // 이 시간(초)마다 1기 증원
-    public float spawnDistance = 20f; // 플레이어로부터 떨어진 거리
-    public float sideSpread = 50f;    // 위/아래 기준 좌우로 퍼지는 각도(좁은 옆면 회피)
+    public float spawnDistance = 28f; // 플레이어로부터 떨어진 거리
     public float formationSpacing = 4f; // 적기 간 좌우 간격
+    public bool autoFitToCamera = true; // 화면 아래 가장자리 밖으로 자동 맞춤
 
     private int spawned = 1;           // 씬에 이미 1기 있으므로 1부터 시작
     private Transform player;
@@ -17,6 +17,21 @@ public class EnemyManager : MonoBehaviour
     {
         PlayerController p = FindFirstObjectByType<PlayerController>();
         if (p != null) player = p.transform;
+
+        if (autoFitToCamera)
+        {
+            Camera cam = Camera.main;
+            float h = 36f, fov = 60f;
+            if (cam != null)
+            {
+                CameraFollow follow = cam.GetComponent<CameraFollow>();
+                h = (follow != null) ? follow.height : cam.transform.position.y;
+                fov = cam.fieldOfView;
+            }
+            // 화면 세로 절반 + 여유 → 아래 가장자리 바로 밖에서 등장
+            float vHalf = h * Mathf.Tan(fov * 0.5f * Mathf.Deg2Rad);
+            spawnDistance = vHalf + 9f;
+        }
     }
 
     void Update()
@@ -36,9 +51,8 @@ public class EnemyManager : MonoBehaviour
 
     void SpawnEnemy()
     {
-        // 세로 화면은 위/아래가 잘 보임 → 위(+Z) 또는 아래(-Z)에서만 등장 (좌우 옆면 회피)
-        float baseAngle = (Random.value < 0.5f) ? 90f : 270f;
-        float angleDeg = baseAngle + Random.Range(-sideSpread, sideSpread);
+        // 항상 화면 아래쪽(-Z)에서만 등장 → 뒤에서 쫓아오는 느낌 + 미리 보여서 대응 가능
+        float angleDeg = 270f + Random.Range(-18f, 18f);
         float ang = angleDeg * Mathf.Deg2Rad;
 
         Vector3 offset = new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)) * spawnDistance;
