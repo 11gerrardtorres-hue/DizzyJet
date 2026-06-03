@@ -384,7 +384,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16995961e439743619ff29af98d0ab9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NearMissDetector
-  nearMissRadius: 3.5
+  nearMissRadius: 1.5
 --- !u!1 &296304714
 GameObject:
   m_ObjectHideFlags: 0
@@ -2737,7 +2737,7 @@ MonoBehaviour:
   finalScoreText: {fileID: 1744859174}
   bestScoreText: {fileID: 458041141}
   survivalRate: 1
-  nearMissBonus: 30
+  nearMissBonus: 5
   nearMissFlashTime: 0.6
 --- !u!4 &2011305989
 Transform:

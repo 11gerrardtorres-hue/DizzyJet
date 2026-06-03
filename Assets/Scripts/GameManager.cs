@@ -36,6 +36,7 @@ public class GameManager : MonoBehaviour
         isGameOver = false;
         score = 0f;
         if (gameOverPanel != null) gameOverPanel.SetActive(false);
+        if (comboText != null) comboText.gameObject.SetActive(false); // 니어미스 때만 보이게
 
         if (skipIntro)
         {

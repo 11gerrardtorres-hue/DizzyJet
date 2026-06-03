@@ -22,6 +22,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("이펙트")]
     public TrailRenderer[] driftTrails;  // 드리프트 중 양 날개 바람 가르기 선
+    public ParticleSystem[] driftFx;     // 드리프트 중 스파크/스피드라인 (좌/우 날개)
 
     [Header("비행기 스프라이트 (상태별 뱅킹)")]
     public SpriteRenderer jetSprite;     // 비행기 스프라이트 렌더러
@@ -42,6 +43,7 @@ public class PlayerController : MonoBehaviour
     private bool wasDrifting;   // 직전 프레임 드리프트 상태 (종료 감지용)
     private float driftCharge;  // 드리프트+선회 유지 시간 (부스터 충전량)
     private float cooldownTimer;// 부스터 쿨다운 남은 시간
+    private float boostFlashTimer; // 부스터 직후 날개 트레일 뿜는 시간
 
     // 좌/우 버튼 누른 순서 추적 (둘 다 누르면 먼저 누른 쪽으로 드리프트)
     private bool prevLeft, prevRight;
@@ -68,12 +70,25 @@ public class PlayerController : MonoBehaviour
     {
         HandleInput();
 
-        // 드리프트 중에만 양 날개 트레일(선) 그리기
+        // 부스터 직후 잠깐만 양 날개 트레일(선) 그리기 (드리프트 중엔 X)
+        if (boostFlashTimer > 0f) boostFlashTimer -= Time.deltaTime;
+        bool trailOn = boostFlashTimer > 0f;
         if (driftTrails != null)
         {
             foreach (var t in driftTrails)
             {
-                if (t != null) t.emitting = isDrifting;
+                if (t != null) t.emitting = trailOn;
+            }
+        }
+
+        // 드리프트 중에만 스파크/스피드라인 파티클 (좌/우)
+        if (driftFx != null)
+        {
+            foreach (var fx in driftFx)
+            {
+                if (fx == null) continue;
+                var em = fx.emission;
+                em.enabled = isDrifting;
             }
         }
 
@@ -107,6 +122,7 @@ public class PlayerController : MonoBehaviour
                 {
                     curSpeed = boostSpeed;
                     cooldownTimer = boostCooldown;
+                    boostFlashTimer = 0.4f; // 부스터 순간 날개 트레일 쫙
                     if (AudioManager.Instance != null) AudioManager.Instance.PlayBoost();
                 }
                 driftCharge = 0f; // 충전량 리셋
