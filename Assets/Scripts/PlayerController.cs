@@ -53,6 +53,8 @@ public class PlayerController : MonoBehaviour
 
     // 카메라 등 외부에서 현재 속도를 읽을 수 있게
     public float CurrentSpeed => curSpeed;
+    // 콤보/이펙트에서 드리프트 중인지 읽을 수 있게
+    public bool IsDrifting => isDrifting;
 
     void Start()
     {

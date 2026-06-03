@@ -8,15 +8,23 @@ public class GameManager : MonoBehaviour
 
     [Header("UI 연결")]
     public TMP_Text scoreText;            // 화면 위 점수
+    public TMP_Text comboText;            // 드리프트 콤보 배율
     public GameObject startPanel;         // 시작 화면
     public GameObject gameOverPanel;      // 게임오버 화면
     public TMP_Text finalScoreText;       // 이번 점수
     public TMP_Text bestScoreText;        // 최고 기록
 
+    [Header("니어미스 (드리프트로 아슬아슬하게 스칠 때)")]
+    public float survivalRate = 1f;       // 생존 초당 점수
+    public float nearMissBonus = 50f;     // 니어미스 1회 보너스 점수
+    public float nearMissFlashTime = 0.6f;// "NEAR MISS!" 표시 시간
+
     private float score;
     private bool isGameOver;
     private bool hasStarted;
     private static bool skipIntro = false; // 재시작 시 시작화면 건너뛰기
+
+    private float nearMissFlash;
 
     void Awake()
     {
@@ -61,10 +69,33 @@ public class GameManager : MonoBehaviour
     {
         if (!hasStarted || isGameOver) return;
 
-        // 생존 시간 = 점수
-        score += Time.deltaTime;
-        if (scoreText != null)
-            scoreText.text = Mathf.FloorToInt(score).ToString();
+        float dt = Time.deltaTime;
+
+        // 생존 점수
+        score += survivalRate * dt;
+        if (scoreText != null) scoreText.text = Mathf.FloorToInt(score).ToString();
+
+        // "NEAR MISS!" 팝업 잠깐 보였다 사라짐
+        if (nearMissFlash > 0f)
+        {
+            nearMissFlash -= dt;
+            if (nearMissFlash <= 0f && comboText != null)
+                comboText.gameObject.SetActive(false);
+        }
+    }
+
+    // 드리프트로 위협을 아슬아슬하게 스칠 때 호출 (니어미스)
+    public void RegisterNearMiss()
+    {
+        if (!hasStarted || isGameOver) return;
+        score += nearMissBonus;
+
+        if (comboText != null)
+        {
+            comboText.gameObject.SetActive(true);
+            comboText.text = "NEAR MISS! +" + Mathf.RoundToInt(nearMissBonus);
+            nearMissFlash = nearMissFlashTime;
+        }
     }
 
     public void GameOver()
