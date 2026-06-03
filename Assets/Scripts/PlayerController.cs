@@ -67,6 +67,9 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        // 드리프트 지속음
+        if (AudioManager.Instance != null) AudioManager.Instance.SetDrift(isDrifting);
+
         // --- 선회/뱅킹: 드리프트면 넓은 U턴 값으로 부드럽게 전환 ---
         float targetTurn    = isDrifting ? driftTurnSpeed : turnSpeed;
         float targetBankMax = isDrifting ? driftBankAngle : bankAngle;
@@ -94,6 +97,7 @@ public class PlayerController : MonoBehaviour
                 {
                     curSpeed = boostSpeed;
                     cooldownTimer = boostCooldown;
+                    if (AudioManager.Instance != null) AudioManager.Instance.PlayBoost();
                 }
                 driftCharge = 0f; // 충전량 리셋
             }

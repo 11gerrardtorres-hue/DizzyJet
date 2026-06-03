@@ -28,6 +28,9 @@ public class Missile : MonoBehaviour
                 transform.rotation = Quaternion.LookRotation(dir);
         }
 
+        // 미사일 발사 → 락온 경고음
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayWarning();
+
         // 수명이 끝나면 자동 소멸
         Destroy(gameObject, lifetime);
     }

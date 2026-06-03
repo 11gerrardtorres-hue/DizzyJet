@@ -72,8 +72,9 @@ public class GameManager : MonoBehaviour
         if (isGameOver) return;   // 중복 호출 방지
         isGameOver = true;
 
-        // 피격 타격감: 화면 흔들림
+        // 피격 타격감: 화면 흔들림 + 폭발음
         if (CameraFollow.Instance != null) CameraFollow.Instance.Shake(0.35f);
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayExplosion();
 
         // 최고 기록 저장 (로컬)
         int finalScore = Mathf.FloorToInt(score);
