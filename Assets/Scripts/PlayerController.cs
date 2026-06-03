@@ -23,6 +23,14 @@ public class PlayerController : MonoBehaviour
     [Header("이펙트")]
     public TrailRenderer[] driftTrails;  // 드리프트 중 양 날개 바람 가르기 선
 
+    [Header("비행기 스프라이트 (상태별 뱅킹)")]
+    public SpriteRenderer jetSprite;     // 비행기 스프라이트 렌더러
+    public Sprite sprStraight;           // 직진
+    public Sprite sprLeft;               // 좌선회
+    public Sprite sprRight;              // 우선회
+    public Sprite sprDriftLeft;          // 드리프트 좌 (없으면 sprLeft 사용)
+    public Sprite sprDriftRight;         // 드리프트 우 (없으면 sprRight 사용)
+
     [Header("모바일 조작 (화면 좌/우 절반)")]
     public HoldButton btnLeft;   // 왼쪽 절반
     public HoldButton btnRight;  // 오른쪽 절반
@@ -110,12 +118,26 @@ public class PlayerController : MonoBehaviour
         // 선회 적용
         heading += turnInput * curTurn * Time.deltaTime;
 
-        // 뱅킹
+        // 뱅킹(롤) 적용 — 단일 스프라이트에선 이 기울기가 뱅킹 연출
         bank = Mathf.Lerp(bank, -turnInput * curBankMax, 8f * Time.deltaTime);
         transform.rotation = Quaternion.Euler(0f, heading, bank);
 
+        // 상태에 맞는 스프라이트로 교체
+        UpdateJetSprite();
+
         // 전진
         transform.position += transform.forward * curSpeed * Time.deltaTime;
+    }
+
+    void UpdateJetSprite()
+    {
+        if (jetSprite == null) return;
+
+        Sprite s = sprStraight;
+        if (turnInput < -0.1f)      s = isDrifting ? (sprDriftLeft  != null ? sprDriftLeft  : sprLeft)  : sprLeft;
+        else if (turnInput > 0.1f)  s = isDrifting ? (sprDriftRight != null ? sprDriftRight : sprRight) : sprRight;
+
+        if (s != null) jetSprite.sprite = s;
     }
 
     void HandleInput()
