@@ -99,6 +99,13 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // 코인 등으로 점수 추가
+    public void AddScore(float amount)
+    {
+        if (!hasStarted || isGameOver) return;
+        score += amount;
+    }
+
     public void GameOver()
     {
         if (isGameOver) return;   // 중복 호출 방지
