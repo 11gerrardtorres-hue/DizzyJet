@@ -19,12 +19,18 @@ public class GameManager : MonoBehaviour
     public float nearMissBonus = 50f;     // 니어미스 1회 보너스 점수
     public float nearMissFlashTime = 0.6f;// "NEAR MISS!" 표시 시간
 
+    [Header("코인 콤보")]
+    public float coinComboWindow = 2f;    // 이 시간 안에 다음 코인 먹으면 콤보 유지
+    public int maxCoinCombo = 5;          // 최대 콤보(적립 배수)
+
     private float score;
     private bool isGameOver;
     private bool hasStarted;
     private static bool skipIntro = false; // 재시작 시 시작화면 건너뛰기
 
     private float nearMissFlash;
+    private int coinCombo;
+    private float coinComboTimer;
 
     void Awake()
     {
@@ -82,6 +88,34 @@ public class GameManager : MonoBehaviour
             nearMissFlash -= dt;
             if (nearMissFlash <= 0f && comboText != null)
                 comboText.gameObject.SetActive(false);
+        }
+
+        // 코인 콤보 시간 경과 → 끊김
+        if (coinComboTimer > 0f)
+        {
+            coinComboTimer -= dt;
+            if (coinComboTimer <= 0f) coinCombo = 0;
+        }
+    }
+
+    // 코인 1개 획득 (콤보로 연속 수집 시 더 많이 적립)
+    public void CollectCoin()
+    {
+        if (!hasStarted || isGameOver) return;
+
+        // 콤보 유지 중이면 +1, 아니면 1부터
+        if (coinComboTimer > 0f) coinCombo = Mathf.Min(maxCoinCombo, coinCombo + 1);
+        else coinCombo = 1;
+        coinComboTimer = coinComboWindow;
+
+        Wallet.Add(coinCombo);  // 연속일수록 더 많이 (1 → 2 → 3 …)
+
+        // 2연속부터 팝업
+        if (coinCombo >= 2 && comboText != null)
+        {
+            comboText.gameObject.SetActive(true);
+            comboText.text = "COIN COMBO x" + coinCombo;
+            nearMissFlash = nearMissFlashTime;
         }
     }
 

@@ -21,8 +21,7 @@ public class Coin : MonoBehaviour
         d.y = 0f;
         if (d.sqrMagnitude < collectRadius * collectRadius)
         {
-            if (GameManager.Instance != null) GameManager.Instance.AddScore(value); // 이번 판 점수
-            Wallet.Add(1);  // 영구 지갑에 코인 1개 적립 (상점용)
+            if (GameManager.Instance != null) GameManager.Instance.CollectCoin(); // 콤보 적립
             Destroy(gameObject);
         }
     }
